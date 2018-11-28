@@ -14,41 +14,6 @@
 
 
 int main() {
-	// 	std::array<float, 4> dan{ 1.0f, 2.0f, 3.0f, 4.0f },
-	// 					     dor{ 1.0f, 2.0f, 3.0f, 4.0f };
-	//
-	// 	static_for<2, 4>([&](auto i) {
-	// 		dan[i] += dor[i];
-	// 	});
-
-// 	{
-// 		std::chrono::microseconds::rep a;
-// 
-// 		// some function for run time profiling
-// 		auto evaluatedFunction = [](std::size_t N) {
-// 			float x = 1.234e5;
-// 			for (std::size_t k = 0; k < N; k++) {
-// 				x += std::sqrtf(x);
-// 				x -= std::powf(x, 0.8f);
-// 			}
-// 		};
-// 
-// 		// profile in default mode (microseconds)
-// 		a = Profiler<true>(evaluatedFunction, 50);
-// 		std::cout << "evaluatedFunction(50) takes " << a << " microseconds" << std::endl;
-// 
-// 		a = Profiler<false>(evaluatedFunction, 50);
-// 		std::cout << "evaluatedFunction(50) takes " << a << " microseconds" << std::endl;
-// 	}
-
-	// --- compile time array ---
-	{
-		IntegerSequence<int32_t, 4> arr0(0, 1, 2, 3);
-		IntegerSequence<int32_t, 5> arr1(SequenceType::rising); // 0, 1, 2, 3 , 4
-		IntegerSequence<int32_t, 5> arr2(SequenceType::sequence, 9, -2); // 9, 7, 5, 3, 1
-		std::cout << "s = " << Sum(arr0) << ", " << Sum(arr1) << ", " << Sum(arr2) << "\n";
-	}
-
 	// --- VectorN tests ---
 	{
 		using namespace Numeric;
