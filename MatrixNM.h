@@ -20,7 +20,6 @@
 #include <vector>
 #include <type_traits>
 #include <utility>
-#include <bitset>
 #include <limits>
 
 
