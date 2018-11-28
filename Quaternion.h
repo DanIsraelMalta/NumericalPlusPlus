@@ -369,27 +369,27 @@ namespace Numeric {
 			// extract a transformation matrix from quaternion
 			template<class LAYOUT = RowMajor<3, 3>> constexpr MatrixNM<T, 3, 3, LAYOUT> DCM() const noexcept {
 				const T q0q1{ m_data[0] * m_data[1] },
-					    q0q2{ m_data[0] * m_data[2] },
-					    q1q2{ m_data[1] * m_data[2] },
-					    q3q0{ m_data[3] * m_data[0] },
-					    q3q1{ m_data[3] * m_data[1] },
-					    q3q2{ m_data[3] * m_data[2] },
-					    q0Sqr{ m_data[0] * m_data[0] },
-					    q1Sqr{ m_data[1] * m_data[1] },
-					    q2Sqr{ m_data[2] * m_data[2] },
-					    q3Sqr{ m_data[3] * m_data[3] },
-						one{ static_cast<T>(1) },
-					    two{ static_cast<T>(2) };
+					q0q2{ m_data[0] * m_data[2] },
+					q1q2{ m_data[1] * m_data[2] },
+					q3q0{ m_data[3] * m_data[0] },
+					q3q1{ m_data[3] * m_data[1] },
+					q3q2{ m_data[3] * m_data[2] },
+					q0Sqr{ m_data[0] * m_data[0] },
+					q1Sqr{ m_data[1] * m_data[1] },
+					q2Sqr{ m_data[2] * m_data[2] },
+					q3Sqr{ m_data[3] * m_data[3] },
+					one{ static_cast<T>(1) },
+					two{ static_cast<T>(2) };
 
 				if constexpr (LAYOUT::m_RowMajor) {
 					return MatrixNM<T, 3, 3, LAYOUT>{ one - two * (q2Sqr + q1Sqr), two * (q0q1 + q3q2),         two * (q0q2 - q3q1),
-													  two * (q0q1 - q3q2),         one - two * (q0Sqr + q2Sqr), two * (q1q2 + q3q0),
-													  two * (q0q2 + q3q1),         two * (q1q2 - q3q0),         one - two * (q0Sqr + q1Sqr) };
+									  two * (q0q1 - q3q2),         one - two * (q0Sqr + q2Sqr), two * (q1q2 + q3q0),
+									  two * (q0q2 + q3q1),         two * (q1q2 - q3q0),         one - two * (q0Sqr + q1Sqr) };
 				}
 				else {
 					return MatrixNM<T, 3, 3, LAYOUT>{ one - two * (q2Sqr + q1Sqr), two * (q0q1 - q3q2),         two * (q0q2 + q3q1),
-													  two * (q0q1 + q3q2),         one - two * (q0Sqr + q2Sqr), two * (q1q2 - q3q0),
-													  two * (q0q2 - q3q1),         two * (q1q2 + q3q0),         one - two * (q0Sqr + q1Sqr) };
+									  two * (q0q1 + q3q2),         one - two * (q0Sqr + q2Sqr), two * (q1q2 - q3q0),
+									  two * (q0q2 - q3q1),         two * (q1q2 + q3q0),         one - two * (q0Sqr + q1Sqr) };
 				}
 			}
 
