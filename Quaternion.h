@@ -102,8 +102,8 @@ namespace Numeric {
 			// construct from an axis (normalized) & angle [rad]
 			explicit constexpr Quaternion(const VectorN<T, 3>& xi_axis, const T xi_angle) {
 				const T halfAngle{ static_cast<T>(0.5) * xi_angle },
-						WW{ std::cos(halfAngle) },
-						sinHalf{ std::sin(halfAngle) };
+					WW{ std::cos(halfAngle) },
+					sinHalf{ std::sin(halfAngle) };
 
 				const VectorN<T, 3> axis{ sinHalf * xi_axis };
 
@@ -119,8 +119,8 @@ namespace Numeric {
 
 			explicit constexpr Quaternion(VectorN<T, 3>&& xi_axis, const T xi_angle) {
 				const T halfAngle{ static_cast<T>(0.5) * xi_angle },
-					    WW{ std::cos(halfAngle) },
-					    sinHalf{ std::sin(halfAngle) };
+					WW{ std::cos(halfAngle) },
+					sinHalf{ std::sin(halfAngle) };
 
 				xi_axis *= sinHalf;
 
@@ -137,7 +137,7 @@ namespace Numeric {
 			// construct from two (normalized) vectors (quaternion will describe rotation from first to second)
 			explicit constexpr Quaternion(const VectorN<T, 3>& xi_from, const VectorN<T, 3>& xi_to) {
 				const T cosAngle{ Dot(xi_from, xi_to) },
-						angle{ std::acos(cosAngle) };
+					angle{ std::acos(cosAngle) };
 
 				VectorN<T, 3> axis{ Cross(xi_from, xi_to) };
 				axis.Normalize();
@@ -151,7 +151,7 @@ namespace Numeric {
 
 			explicit constexpr Quaternion(VectorN<T, 3>&& xi_from, VectorN<T, 3>&& xi_to) {
 				const T cosAngle{ Dot(xi_from, xi_to) },
-						angle{ std::acos(cosAngle) };
+					angle{ std::acos(cosAngle) };
 
 				xi_from = Cross(xi_from, std::move(xi_to));
 				xi_from.Normalize();
@@ -342,20 +342,20 @@ namespace Numeric {
 
 			// '[]' element access
 			constexpr T  operator[](const std::size_t i) const { return m_data[i]; }
-			constexpr T& operator[](const std::size_t i)	     { return m_data[i]; }
+			constexpr T& operator[](const std::size_t i)	   { return m_data[i]; }
 
 			// extract quaternion x/y/z/w
 			constexpr T  X() const { return m_data[0]; }
 			constexpr T& X()       { return m_data[0]; }
 
 			constexpr T  Y() const { return m_data[1]; }
-			constexpr T& Y()	   { return m_data[1]; }
+			constexpr T& Y()       { return m_data[1]; }
 
 			constexpr T  Z() const { return m_data[2]; }
-			constexpr T& Z()	   { return m_data[2]; }
+			constexpr T& Z()       { return m_data[2]; }
 
 			constexpr T  W() const { return m_data[3]; }
-			constexpr T& W()	   { return m_data[3]; }
+			constexpr T& W()       { return m_data[3]; }
 
 			// extract quaternion angle (assuming the quaternion is normalized)
 			constexpr T Angle() const noexcept { return static_cast<T>(2) * std::acos(this->W()); }
@@ -438,14 +438,14 @@ namespace Numeric {
 			// rotate a point using a (NORMALIZED) quaternion
 			friend void RotatePointUsingQuaternion(VectorN<T, 3>& xio_point, const Quaternion<T>& xi_quat) noexcept {
 				const VectorN<T, 3> quatAxis{ xi_quat.X(), xi_quat.Y(), xi_quat.Z() },
-									temp{ static_cast<T>(2) * Cross(quatAxis, xio_point) };
+						    temp{ static_cast<T>(2) * Cross(quatAxis, xio_point) };
 
 				xio_point += temp * xi_quat.W() + Cross(quatAxis, temp);
 			}
 
 			friend void RotatePointUsingQuaternion(VectorN<T, 3>& xio_point, Quaternion<T>&& xi_quat) noexcept {
 				const VectorN<T, 3> quatAxis{ xi_quat.X(), xi_quat.Y(), xi_quat.Z() },
-									temp{ static_cast<T>(2) * Cross(quatAxis, xio_point) };
+						    temp{ static_cast<T>(2) * Cross(quatAxis, xio_point) };
 
 				xio_point += temp * xi_quat.W() + Cross(quatAxis, temp);
 			}
