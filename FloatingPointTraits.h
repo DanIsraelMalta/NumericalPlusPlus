@@ -79,7 +79,7 @@ namespace Numeric {
         }
 
         // locals
-		const float absLhs{ std::abs(xi_lhs) },
+	const float absLhs{ std::abs(xi_lhs) },
                     absRhs{ std::abs(xi_rhs) },
                     diff{ std::abs(xi_lhs - xi_rhs) };
 
@@ -100,7 +100,7 @@ namespace Numeric {
         }
 
         // locals
-		const double absLhs{ std::abs(xi_lhs) },
+	const double absLhs{ std::abs(xi_lhs) },
 			absRhs{ std::abs(xi_rhs) },
 			diff{ std::abs(xi_lhs - xi_rhs) };
 
@@ -121,7 +121,7 @@ namespace Numeric {
         }
 
         // locals
-		const long double absLhs{ std::abs(xi_lhs) },
+	const long double absLhs{ std::abs(xi_lhs) },
 						  absRhs{ std::abs(xi_rhs) },
 						  diff{ std::abs(xi_lhs - xi_rhs) };
 
