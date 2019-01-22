@@ -29,8 +29,8 @@ namespace Numeric {
 
 	// right/left hand side coordinate system type
 	enum class Handness : int8_t {
-		left = -1,      // left hand side system
-		right = 1       // right hand side system
+	    left = -1,      // left hand side system
+	    right = 1       // right hand side system
 	};
 
 	/***********************/
