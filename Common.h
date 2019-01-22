@@ -18,7 +18,7 @@
 /*********************/
 namespace Numeric {
 
-	/**
+    /**
     * \brief return true if value is positive (larger then zero)
     *
     * @param {T,    in}  value
@@ -140,9 +140,9 @@ namespace Numeric {
     * @param {T, in}  values
     * @param {T, out} minimal value
     **/
-	template<typename T> constexpr inline T Min(const T xi_a) noexcept {
-		return (xi_a);
-	}
+    template<typename T> constexpr inline T Min(const T xi_a) noexcept {
+	return (xi_a);
+    }
 
     template<typename T> constexpr inline T Min(const T xi_a, const T xi_b) noexcept {
         return ((xi_a < xi_b) ? (xi_a) : (xi_b));
@@ -158,9 +158,9 @@ namespace Numeric {
     * @param {T, in}  values
     * @param {T, out} maximal value
     **/
-	template<typename T> constexpr inline T Max(const T xi_a) noexcept {
-		return (xi_a);
-	}
+    template<typename T> constexpr inline T Max(const T xi_a) noexcept {
+	return (xi_a);
+    }
 
     template<typename T> constexpr inline T Max(const T xi_a, const T xi_b) noexcept {
         return ((xi_a > xi_b) ? (xi_a) : (xi_b));
@@ -170,7 +170,7 @@ namespace Numeric {
         return Max(Max(xi_a, xi_b), args...);
     }
 
-	/**
+    /**
     * \brief return the linear interpolation between two values
     *
     * @param {T, in}  value1
@@ -234,11 +234,11 @@ namespace Numeric {
 
         // transform to: x^3 + p*x + q = 0
         const T ov3{ static_cast<T>(1) / static_cast<T>(3) },
-			    ov27{ static_cast<T>(1) / static_cast<T>(27) },
-			    ovsqrt27{ static_cast<T>(1) / std::sqrt(static_cast<T>(27)) },
-				bSqr{ xi_b * xi_b },
-				p{ (static_cast<T>(3) * xi_c - bSqr) * ov3 },
-				q{ (static_cast<T>(9) * xi_b * xi_c - static_cast<T>(27) * xi_d - static_cast<T>(2) * bSqr * xi_b) * ov27 };
+		ov27{ static_cast<T>(1) / static_cast<T>(27) },
+		ovsqrt27{ static_cast<T>(1) / std::sqrt(static_cast<T>(27)) },
+		bSqr{ xi_b * xi_b },
+		p{ (static_cast<T>(3) * xi_c - bSqr) * ov3 },
+		q{ (static_cast<T>(9) * xi_b * xi_c - static_cast<T>(27) * xi_d - static_cast<T>(2) * bSqr * xi_b) * ov27 };
 
         // x = w - (p / (3 * w))
         // (w^3)^2 - q*(w^3) - (p^3)/27 = 0
@@ -249,13 +249,13 @@ namespace Numeric {
             h = std::sqrt(h);
 
             const T qHalf{ q * static_cast<T>(0.5) },
-				    bThird{ xi_b * ov3 },
-					r{ qHalf + h },
-					t{ qHalf - h },
-					s{ std::cbrt(r) },
-					u{ std::cbrt(t) },
-					re{ -(s + u) * T(0.5) - bThird },
-					im{  (s - u) * Constants<T>::SQRT3() * T(0.5) };
+		    bThird{ xi_b * ov3 },
+		    r{ qHalf + h },
+		    t{ qHalf - h },
+		    s{ std::cbrt(r) },
+		    u{ std::cbrt(t) },
+		    re{ -(s + u) * T(0.5) - bThird },
+		    im{  (s - u) * Constants<T>::SQRT3() * T(0.5) };
 
             // real root
             xo_roots[0] = (s + u) - bThird;
@@ -273,11 +273,11 @@ namespace Numeric {
         }  // three real solutions
         else {            
             const T i{ p * std::sqrt(-p) * ovsqrt27 },     // p is negative (since h is positive)
-					j{ std::cbrt(i) },
-					k{ ov3 * std::acos((q / (static_cast<T>(2) * i))) },
-					m{ std::cos(k) },
-					n{ std::sin(k) * Constants<T>::SQRT3() },
-					s{ -xi_b * ov3 };
+		    j{ std::cbrt(i) },
+		    k{ ov3 * std::acos((q / (static_cast<T>(2) * i))) },
+		    m{ std::cos(k) },
+		    n{ std::sin(k) * Constants<T>::SQRT3() },
+		    s{ -xi_b * ov3 };
 
             // roots
             xo_roots[0] = static_cast<T>(2) * j * m + s;
