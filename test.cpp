@@ -767,85 +767,85 @@ int main() {
 
 	// --- interval ---
 	{
-		using namespace Numeric;
+		 using namespace Numeric;
 
-		Interval<int32_t> i0,
-						  i1(0, 1),
-						  i2{ 1, 2 },
-						  i3(i2),
-						  i4(1, 4);
-		i1 = { 1, 0 };
-
-		assert(i0.inf == 0);
-		assert(i0.sup == 0);
-
-		assert(i1.inf == 1);
-		assert(i1.sup == 0);
-
-		assert(i2.inf == 1);
-		assert(i2.sup == 2);
-
-		assert(i3.inf == i2.inf);
-		assert(i3.sup == i2.sup);
-
-		assert(i4.inf == 1);
-		assert(i4.sup == 4);
-
-		assert(i2.inf == 1);
-		assert(i2.sup == 2);
-
-		i2 = { 0, 3 };
-		i1 = { 0, 1 };
-		i3 = Union(i1, i2);
-		assert(i3.inf == 0);
-		assert(i3.sup == 3);
-
-		i3 = Union(i1, i2, i4);
-		assert(i3.inf == 0);
-		assert(i3.sup == 4);
-
-		i3 = Interesection(i1, i2);
-		assert(i3.inf == 0);
-		assert(i3.sup == 1);
-
-		i3 = Interesection(i1, i2, i4);
-		assert(i3.inf == 1);
-		assert(i3.sup == 1);
-
-		i3 = IntervalMin(i1, i2);
-		assert(i3.inf == 0);
-		assert(i3.sup == 1);
-
-		i3 = IntervalMin(i1, i2, i4);
-		assert(i3.inf == 0);
-		assert(i3.sup == 1);
-
-		i3 = IntervalMax(i1, i2);
-		assert(i3.inf == 0);
-		assert(i3.sup == 3);
-
-		i3 = IntervalMax(i1, i2, i4);
-		assert(i3.inf == 1);
-		assert(i3.sup == 4);
-
-
-		i1 = { 1, 2 };
-		i2 = { 3, 4 };
-		i4 = Interesection(i1, i2);
-		assert(i4.inf == std::numeric_limits<int32_t>::max());
-		assert(i4.sup == std::numeric_limits<int32_t>::min());
-
-		i1 = { 1, 20 };
-		i2 = { 0, 1 };
-		i4 = i1 / i2;
-		assert(i4.inf == 1);
-		assert(i4.sup == std::numeric_limits<int32_t>::max());
-
-		i1 = { -1, 0 };
-		i2 = { 1, std::numeric_limits<int32_t>::max() };
-		i4 = i1 * i2;
-		assert(i4.inf == -std::numeric_limits<int32_t>::max());
-		assert(i4.sup == 0);
+                 Interval<int32_t> i0,
+                                   i1(0, 1),
+                                   i2{ 1, 2 },
+                                   i3(i2),
+                                   i4(1, 4);
+                 i1 = { 1, 0 };
+         
+                 assert(i0.Inf() == 0);
+                 assert(i0.Sup() == 0);
+         
+                 assert(i1.Inf() == 1);
+                 assert(i1.Sup() == 0);
+         
+                 assert(i2.Inf() == 1);
+                 assert(i2.Sup() == 2);
+         
+                 assert(i3.Inf() == i2.Inf());
+                 assert(i3.Sup() == i2.Sup());
+         
+                 assert(i4.Inf() == 1);
+                 assert(i4.Sup() == 4);
+         
+                 assert(i2.Inf() == 1);
+                 assert(i2.Sup() == 2);
+         
+                 i2 = { 0, 3 };
+                 i1 = { 0, 1 };
+                 i3 = Union(i1, i2);
+                 assert(i3.Inf() == 0);
+                 assert(i3.Sup() == 3);
+         
+                 i3 = Union(i1, i2, i4);
+                 assert(i3.Inf() == 0);
+                 assert(i3.Sup() == 4);
+         
+                 i3 = Interesection(i1, i2);
+                 assert(i3.Inf() == 0);
+                 assert(i3.Sup() == 1);
+         
+                 i3 = Interesection(i1, i2, i4);
+                 assert(i3.Inf() == 1);
+                 assert(i3.Sup() == 1);
+         
+                 i3 = IntervalMin(i1, i2);
+                 assert(i3.Inf() == 0);
+                 assert(i3.Sup() == 1);
+         
+                 i3 = IntervalMin(i1, i2, i4);
+                 assert(i3.Inf() == 0);
+                 assert(i3.Sup() == 1);
+         
+                 i3 = IntervalMax(i1, i2);
+                 assert(i3.Inf() == 0);
+                 assert(i3.Sup() == 3);
+         
+                 i3 = IntervalMax(i1, i2, i4);
+                 assert(i3.Inf() == 1);
+                 assert(i3.Sup() == 4);
+         
+         
+                 i1 = { 1, 2 };
+                 i2 = { 3, 4 };
+                 i4 = Interesection(i1, i2);
+                 assert(i4.Inf() == std::numeric_limits<int32_t>::max());
+                 assert(i4.Sup() == std::numeric_limits<int32_t>::min());
+         
+                 i1 = { 1, 20 };
+                 i2 = { 0, 1 };
+                 i4 = i1 / i2;
+                 assert(i4.Inf() == 1);
+                 assert(i4.Sup() == std::numeric_limits<int32_t>::max());
+         
+                 i1 = { -1, 0 };
+                 i2 = { 1, std::numeric_limits<int32_t>::max() };
+                 i4 = i1 * i2;
+                 assert(i4.Inf() == -std::numeric_limits<int32_t>::max());
+                 assert(i4.Sup() == 0);
 	}
 
 	
