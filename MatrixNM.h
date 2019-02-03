@@ -567,59 +567,49 @@ namespace Numeric {
         // numerical assignment operator overloading
         public:
 
-            // --- operations with scalars ---
-
-            constexpr MatrixNM& operator += (const T xi_value) {
-                m_data += xi_value;
-                return *this;
+            // operations with scalars
+#define M_OPERATOR(OP)                                           \
+            constexpr MatrixNM& operator OP (const T xi_value) { \
+                m_data OP xi_value;                              \
+                return *this;                                    \
             }
 
-            constexpr MatrixNM& operator -= (const T xi_value) {
-                m_data -= xi_value;
-                return *this;
+            M_OPERATOR(+=);
+            M_OPERATOR(-=);
+            M_OPERATOR(*=);
+            M_OPERATOR(/=);
+            M_OPERATOR(&=);
+            M_OPERATOR(|=);
+            M_OPERATOR(^=);
+            M_OPERATOR(>>=);
+            M_OPERATOR(<<=);
+
+#undef M_OPERATOR
+
+            // operations with equally size matrix
+#define M_OPERATOR(OP, AOP)                                                            \
+            constexpr MatrixNM& operator OP (const MatrixNM<T, ROW, COL>& xi_mat) {    \
+                static_for<0, SIZE>([&](std::size_t i) {                               \
+                    m_data[i] AOP xi_mat[i];                                           \
+                });                                                                    \
+                return *this;                                                          \
+            }                                                                          \
+            constexpr MatrixNM& operator OP (MatrixNM<T, ROW, COL>&& xi_mat) {         \
+                static_for<0, SIZE>([&](std::size_t i) {                               \
+                    m_data[i] AOP std::move(xi_mat[i]);                                \
+                });                                                                    \
+                return *this;                                                          \
             }
 
-            constexpr MatrixNM& operator *= (const T xi_value) {
-                m_data *= xi_value;
-                return *this;
-            }
+            M_OPERATOR(+, +=);
+            M_OPERATOR(-, -=);
+            M_OPERATOR(&, &=);
+            M_OPERATOR(| , |=);
+            M_OPERATOR(^, ^=);
+            M_OPERATOR(>> , >>=);
+            M_OPERATOR(<< , <<=);
 
-            constexpr MatrixNM& operator /= (const T xi_value) {
-                m_data /= xi_value;
-                return *this;
-            }
-
-            // --- operations with equally sized matrix ---
-
-            constexpr MatrixNM& operator += (const MatrixNM<T, ROW, COL>& xi_mat) {
-                static_for<0, SIZE>([&](std::size_t i) {
-                    m_data[i] += xi_mat[i];
-                });
-
-                return *this;
-            }
-
-            constexpr MatrixNM& operator += (MatrixNM<T, ROW, COL>&& xi_mat) {
-                static_for<0, SIZE>([&](std::size_t i) {
-                    m_data[i] += std::move(xi_mat[i]);
-                });
-
-                return *this;
-            }
-
-            constexpr MatrixNM& operator -= (const MatrixNM<T, ROW, COL>& xi_mat) {
-                static_for<0, SIZE>([&](std::size_t i) {
-                    m_data[i] -= xi_mat[i];
-                });
-                return *this;
-            }
-
-            constexpr MatrixNM& operator -= (MatrixNM<T, ROW, COL>&& xi_mat) {
-                static_for<0, SIZE>([&](std::size_t i) {
-                    m_data[i] -= std::move(xi_mat[i]);
-                });
-                return *this;
-            }
+#undef M_OPERATOR
 
             // cubic matrix multiplication
             constexpr MatrixNM& operator *= (const MatrixNM<T, ROW, COL>& xi_mat) {
@@ -1552,115 +1542,81 @@ namespace Numeric {
         return xi_mat;
     }
 
-    // --- binary plus ---
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator + (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat, const T xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);
-        xo_mat += xi_value;
-        return xo_mat;
+    // binary operations without left hand side scalar
+#define M_BINARY_OP_NO_LHS_SCALAR(OP, AOP)                                                                                                                          \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                       \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator OP (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat, const T xi_value) {                                    \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);                                                                                                               \
+        xo_mat AOP xi_value;                                                                                                                                        \
+        return xo_mat;                                                                                                                                              \
+    }                                                                                                                                                               \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                       \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator OP (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat, const T xi_value) {                                        \
+        xi_mat AOP xi_value;                                                                                                                                        \
+        return xi_mat;                                                                                                                                              \
+    }                                                                                                                                                               \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                       \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator OP (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat1, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat2) {       \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat1);                                                                                                              \
+        xo_mat AOP xi_mat2;                                                                                                                                         \
+        return xo_mat;                                                                                                                                              \
+    }                                                                                                                                                               \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                       \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator OP (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat1, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat2) {                \
+        xi_mat1 AOP xi_mat2;                                                                                                                                        \
+        return xi_mat1;                                                                                                                                             \
     }
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator + (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat, const T xi_value) {
-        xi_mat += xi_value;
-        return xi_mat;
+    M_BINARY_OP_NO_LHS_SCALAR(-, -=);
+    M_BINARY_OP_NO_LHS_SCALAR(/, /=);
+    M_BINARY_OP_NO_LHS_SCALAR(&, &=);
+    M_BINARY_OP_NO_LHS_SCALAR(|, |=);
+    M_BINARY_OP_NO_LHS_SCALAR(^, ^=);
+    M_BINARY_OP_NO_LHS_SCALAR(>>, >>=);
+    M_BINARY_OP_NO_LHS_SCALAR(<<, <<=);
+
+#undef M_BINARY_OP_NO_LHS_SCALAR
+
+    // binary operations with left hand side scalar
+#define M_BINARY_OP_WITH_LHS_SCALAR(OP, AOP)                                                                                                                          \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                         \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator OP (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat, const T xi_value) {                                      \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);                                                                                                                 \
+        xo_mat AOP xi_value;                                                                                                                                          \
+        return xo_mat;                                                                                                                                                \
+    }                                                                                                                                                                 \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                         \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator OP (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat, const T xi_value) {                                          \
+        xi_mat AOP xi_value;                                                                                                                                          \
+        return xi_mat;                                                                                                                                                \
+    }                                                                                                                                                                 \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                         \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator OP (const T xi_value, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat) {                                      \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);                                                                                                                 \
+        xo_mat AOP xi_value;                                                                                                                                          \
+        return xo_mat;                                                                                                                                                \
+    }                                                                                                                                                                 \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                         \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator OP (const T xi_value, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat) {                                          \
+        xi_mat AOP xi_value;                                                                                                                                          \
+        return xi_mat;                                                                                                                                                \
+    }                                                                                                                                                                 \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                         \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator OP (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat1, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat2) {         \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat1);                                                                                                                \
+        xo_mat AOP xi_mat2;                                                                                                                                           \
+        return xo_mat;                                                                                                                                                \
+    }                                                                                                                                                                 \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                                         \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator OP (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat1, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat2) {                  \
+        xi_mat1 AOP xi_mat2;                                                                                                                                          \
+        return xi_mat1;                                                                                                                                               \
     }
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator + (const T xi_value, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);
-        xo_mat += xi_value;
-        return xo_mat;
-    }
+    M_BINARY_OP_WITH_LHS_SCALAR(+, +=);
+    M_BINARY_OP_WITH_LHS_SCALAR(*, *=);
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator + (const T xi_value, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat) {
-        xi_mat += xi_value;
-        return xi_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator + (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat1, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat2) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat1);
-        xo_mat += xi_mat2;
-        return xo_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator + (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat1, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat2) {
-        xi_mat1 += xi_mat2;
-        return xi_mat1;
-    }
-
-    // --- binary minus ---
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator - (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat, const T xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);
-        xo_mat -= xi_value;
-        return xo_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator - (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat, const T xi_value) {
-        xi_mat -= xi_value;
-        return xi_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator - (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat1, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat2) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat1);
-        xo_mat -= xi_mat2;
-        return xo_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator - (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat1, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat2) {
-        xi_mat1 -= xi_mat2;
-        return xi_mat1;
-    }
-
-    // --- binary division ---
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator / (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat, const T xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);
-        const T valueInv{ static_cast<T>(1) / xi_value };
-        xo_mat *= valueInv;
-        return xo_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator / (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat, const T xi_value) {
-        const T valueInv{ static_cast<T>(1) / xi_value };
-        xi_mat *= valueInv;
-        return xi_mat;
-    }
-
-    // --- binary multiplication ---
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator * (const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat, const T xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);
-        xo_mat *= xi_value;
-        return xo_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator * (MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat, const T xi_value) {
-        xi_mat *= xi_value;
-        return xi_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> operator * (const T xi_value, const MatrixNM<T, ROW, COL, LAYOUT>& xi_mat) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_mat(xi_mat);
-        xo_mat *= xi_value;
-        return xo_mat;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& operator * (const T xi_value, MatrixNM<T, ROW, COL, LAYOUT>&& xi_mat) {
-        xi_mat *= xi_value;
-        return xi_mat;
-    }
+#undef M_BINARY_OP_WITH_LHS_SCALAR
 
     // matrix * vector (i.e - right multiply a matrix by a vector)
     // (row X 1) = (row X col) * (1 X COL)
@@ -1887,262 +1843,150 @@ namespace Numeric {
     /**
     * relational operator overload
     **/
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline bool operator == (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {
-        const std::size_t len{ xi_lhs.Size() };
-        return std::equal(&xi_lhs[0], &xi_lhs[len], &xi_rhs[0], &xi_rhs[len]);
+#define M_OPERATOR(OP)                                                                                                                   \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                            \
+    constexpr inline bool operator OP (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {       \
+        bool xo_rational{ false };                                                                                                       \
+        for (std::size_t i{}; (i < ROW * COL) && !xo_rational; ++i) {                                                                    \
+            xo_rational = xi_lhs[i] OP xi_rhs[i];                                                                                        \
+        }                                                                                                                                \
+        return xo_rational;                                                                                                              \
+    }                                                                                                                                    \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                            \
+    constexpr inline bool operator OP (const T xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {                                    \
+        bool xo_rational{ false };                                                                                                       \
+        for (std::size_t i{}; (i < ROW * COL) && !xo_rational; ++i) {                                                                    \
+            xo_rational = xi_lhs OP xi_rhs[i];                                                                                           \
+        }                                                                                                                                \
+        return xo_rational;                                                                                                              \
+    }                                                                                                                                    \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                            \
+constexpr inline bool operator OP (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const T& xi_rhs) {                                       \
+        bool xo_rational{ false };                                                                                                       \
+        for (std::size_t i{}; (i < ROW * COL) && !xo_rational; ++i) {                                                                    \
+            xo_rational = xi_lhs[i] OP xi_rhs;                                                                                           \
+        }                                                                                                                                \
+        return xo_rational;                                                                                                              \
     }
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline bool operator != (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {
-        return !(xi_lhs == xi_rhs);
-    }
+    M_OPERATOR(== );
+    M_OPERATOR(!= );
+    M_OPERATOR(>= );
+    M_OPERATOR(> );
+    M_OPERATOR(<= );
+    M_OPERATOR(< );
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline bool operator < (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {
-        const std::size_t len{ xi_lhs.Size() };
-        std::lexicographical_compare(&xi_lhs[0], &xi_lhs[len], &xi_rhs[0], &xi_rhs[len]);
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline bool operator <= (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {
-        return ((xi_lhs == xi_rhs) || (xi_lhs < xi_rhs));
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline bool operator > (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {
-        return ((!(xi_lhs == xi_rhs)) && (!(xi_lhs < xi_rhs)));
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline bool operator >= (const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {
-        return ((xi_lhs == xi_rhs) || (xi_lhs > xi_rhs));
-    }
+#undef M_OPERATOR
 
     /**
     * numerical functions
     **/
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> abs(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::abs(xo_return[i]);
-        });
-
-        return xo_return;
+    // unary functions
+#define M_UNARY_FUNCTION(NAME, STL_NAME)                                                                   \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> NAME(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {   \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);                                                 \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                      \
+            xo_return[i] = STL_NAME(xo_return[i]);                                                         \
+        });                                                                                                \
+        return xo_return;                                                                                  \
+    }                                                                                                      \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& NAME(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {       \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                      \
+            xi_value[i] = STL_NAME(xi_value[i]);                                                           \
+        });                                                                                                \
+        return xi_value;                                                                                   \
     }
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& abs(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::abs(xi_value[i]);
-        });
+    M_UNARY_FUNCTION(abs, std::abs);
+    M_UNARY_FUNCTION(floor, std::floor);
+    M_UNARY_FUNCTION(ceil, std::ceil);
+    M_UNARY_FUNCTION(round, std::round);
+    M_UNARY_FUNCTION(rint, std::rint);
+    M_UNARY_FUNCTION(trunc, std::trunc);
+    M_UNARY_FUNCTION(sqrt, std::sqrt);
+    M_UNARY_FUNCTION(cbrt, std::cbrt);
+    M_UNARY_FUNCTION(exp, std::exp);
+    M_UNARY_FUNCTION(exp2, std::exp2);
+    M_UNARY_FUNCTION(log, std::log);
+    M_UNARY_FUNCTION(log2, std::log2);
+    M_UNARY_FUNCTION(log10, std::log10);
+    M_UNARY_FUNCTION(log1p, std::log1p);
+    M_UNARY_FUNCTION(sin, std::sin);
+    M_UNARY_FUNCTION(cos, std::cos);
+    M_UNARY_FUNCTION(tan, std::tan);
+    M_UNARY_FUNCTION(asin, std::asin);
+    M_UNARY_FUNCTION(acos, std::acos);
+    M_UNARY_FUNCTION(atan, std::atan);
+    M_UNARY_FUNCTION(sinh, std::sinh);
+    M_UNARY_FUNCTION(cosh, std::cosh);
+    M_UNARY_FUNCTION(tanh, std::tanh);
+    M_UNARY_FUNCTION(asinh, std::asinh);
+    M_UNARY_FUNCTION(acosh, std::acosh);
+    M_UNARY_FUNCTION(atanh, std::atanh);
+    M_UNARY_FUNCTION(erf, std::erf);
+    M_UNARY_FUNCTION(erfc, std::erfc);
+    M_UNARY_FUNCTION(tgamma, std::tgamma);
+    M_UNARY_FUNCTION(lgamma, std::lgamma);
 
-        return xi_value;
+#undef M_UNARY_FUNCTION
+
+    // binary functions
+#define M_BINARY_FUNCTION(NAME, STL_NAME)                                                                                                                  \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> NAME(const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const T xi_rhs) {                                     \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_return();                                                                                                         \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                                                                      \
+            xo_return[i] = STL_NAME(xi_lhs[i], xi_rhs);                                                                                                    \
+        });                                                                                                                                                \
+        return xo_return;                                                                                                                                  \
+    }                                                                                                                                                      \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& NAME(MatrixNM<T, ROW, COL, LAYOUT>&& xi_lhs, const T xi_rhs) {                                         \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                                                                      \
+            xi_lhs[i] = STL_NAME(xi_lhs[i], xi_rhs);                                                                                                       \
+        });                                                                                                                                                \
+        return xi_lhs;                                                                                                                                     \
+    }                                                                                                                                                      \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> NAME(const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {        \
+        MatrixNM<T, ROW, COL, LAYOUT> xo_return();                                                                                                         \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                                                                      \
+            xo_return[i] = STL_NAME(xi_lhs[i], xi_rhs[i]);                                                                                                 \
+        });                                                                                                                                                \
+        return xo_return;                                                                                                                                  \
+    }                                                                                                                                                      \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> NAME(MatrixNM<T, ROW, COL, LAYOUT>&& xi_lhs, const MatrixNM<T, ROW, COL, LAYOUT>& xi_rhs) {             \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                                                                      \
+            xi_lhs[i] = STL_NAME(xi_lhs[i], xi_rhs[i]);                                                                                                    \
+        });                                                                                                                                                \
+        return xi_lhs;                                                                                                                                     \
+    }                                                                                                                                                      \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> NAME(const MatrixNM<T, ROW, COL, LAYOUT>& xi_lhs, MatrixNM<T, ROW, COL, LAYOUT>&& xi_rhs) {             \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                                                                      \
+            xi_rhs[i] = STL_NAME(xi_lhs[i], xi_rhs[i]);                                                                                                    \
+        });                                                                                                                                                \
+        return xi_rhs;                                                                                                                                     \
+    }                                                                                                                                                      \
+    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>                                                              \
+    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> NAME(MatrixNM<T, ROW, COL, LAYOUT>&& xi_lhs, MatrixNM<T, ROW, COL, LAYOUT>&& xi_rhs) {                  \
+        static_for<0, ROW * COL>([&](std::size_t i) {                                                                                                      \
+            xi_lhs[i] = STL_NAME(xi_lhs[i], xi_rhs[i]);                                                                                                    \
+        });                                                                                                                                                \
+        return xi_lhs;                                                                                                                                     \
     }
 
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> ceil(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
+    M_BINARY_FUNCTION(pow, std::pow);
+    M_BINARY_FUNCTION(hypot, std::hypot);
+    M_BINARY_FUNCTION(atan2, std::atan2);
+    M_BINARY_FUNCTION(reminder, std::reminder);
+    M_BINARY_FUNCTION(fmod, std::fmod);
 
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::ceil(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& ceil(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::ceil(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> floor(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::floor(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& floor(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::floor(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> sqrt(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::sqrt(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& sqrt(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::sqrt(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> pow(const MatrixNM<T, ROW, COL, LAYOUT>& xi_base, const T xi_power) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return();
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::pow(xi_base[i], xi_power);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& pow(MatrixNM<T, ROW, COL, LAYOUT>&& xi_base, const T xi_power) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_base[i] = std::pow(xi_base[i], xi_power);
-        });
-
-        return xi_base;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> sin(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::sin(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& sin(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::sin(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> cos(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::cos(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& cos(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::cos(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> tan(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::tan(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& tan(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::tan(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> asin(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::asin(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& asin(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::asin(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> acos(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::acos(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& acos(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::acos(xi_value[i]);
-        });
-
-        return xi_value;
-    }
-
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>> 
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT> atan(const MatrixNM<T, ROW, COL, LAYOUT>& xi_value) {
-        MatrixNM<T, ROW, COL, LAYOUT> xo_return(xi_value);
-
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xo_return[i] = std::atan(xo_return[i]);
-        });
-
-        return xo_return;
-    }
-    
-    template<typename T, std::size_t ROW, std::size_t COL, class LAYOUT = RowMajor<ROW, COL>>
-    constexpr inline MatrixNM<T, ROW, COL, LAYOUT>& atan(MatrixNM<T, ROW, COL, LAYOUT>&& xi_value) {
-        static_for<0, ROW * COL>([&](std::size_t i) {
-            xi_value[i] = std::atan(xi_value[i]);
-        });
-
-        return xi_value;
-    }
+#undef M_BINARY_FUNCTION
 
     /**
     * type queries
