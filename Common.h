@@ -27,6 +27,9 @@ namespace Numeric {
     template<typename T> constexpr inline bool IsPositive(const T xi_value) noexcept {
         return (xi_value >= FloatingPointTrait<T>::epsilon());
     }
+    template<typename T, typename... Ts> constexpr inline bool IsPositive(const T xi_value, Ts... ts) noexcept {
+        return IsPositive(xi_value) && IsPositive(std::forward<Ts>(ts)...);
+    }
     
     /**
     * \brief return true if value is negative (smaller then zero)
@@ -37,8 +40,11 @@ namespace Numeric {
     template<typename T> constexpr inline bool IsNegative(const T xi_value) noexcept {
         return (xi_value <= -FloatingPointTrait<T>::epsilon());
     }
+    template<typename T, typename... Ts> constexpr inline bool IsNegative(const T xi_value, Ts... ts) noexcept {
+        return IsNegative(xi_value) && IsNegative(std::forward<Ts>(ts)...);
+    }
 
-	/**
+    /**
     * \brief return true if value is zero (within floating point trait accuracy)
     *
     * @param {T,    in}  value
@@ -46,6 +52,9 @@ namespace Numeric {
     **/
     template<typename T> constexpr inline bool IsZero(const T xi_value) noexcept {
         return FloatingPointTrait<T>::Equals(xi_value, T{});
+    }
+    template<typename T, typename... Ts> constexpr inline bool IsZero(const T xi_value, Ts... ts) noexcept {
+        return IsZero(xi_value) && IsZero(std::forward<Ts>(ts)...);
     }
 
     /**
@@ -134,14 +143,14 @@ namespace Numeric {
         return (xi_angle - Constants<T>::TAU() * std::floor((xi_angle + Constants<T>::PI() - xi_center) / Constants<T>::TAU()));
     }
 
-	/**
+    /**
     * \brief return the minimal value among a list of values
     * 
     * @param {T, in}  values
     * @param {T, out} minimal value
     **/
     template<typename T> constexpr inline T Min(const T xi_a) noexcept {
-	return (xi_a);
+        return (xi_a);
     }
 
     template<typename T> constexpr inline T Min(const T xi_a, const T xi_b) noexcept {
@@ -159,7 +168,7 @@ namespace Numeric {
     * @param {T, out} maximal value
     **/
     template<typename T> constexpr inline T Max(const T xi_a) noexcept {
-	return (xi_a);
+        return (xi_a);
     }
 
     template<typename T> constexpr inline T Max(const T xi_a, const T xi_b) noexcept {
@@ -168,6 +177,12 @@ namespace Numeric {
 
     template<typename T, typename... TS> constexpr inline T Max(const T xi_a, const T xi_b, const TS... args) noexcept {
         return Max(Max(xi_a, xi_b), args...);
+    }
+
+    // lazy short circuited test to see if all pack members are within a given range
+    template<typename T, typename...Ts> bool WithIn(const T xi_min, const T xi_max, const Ts ...ts) {
+        static_assert(std::is_arithmetic<T>::type, "WithIn operates only on arithmetic types.");
+        return (((ts >= xi_min) && (ts <= xi_max)) && ...);
     }
 
     /**
@@ -234,11 +249,11 @@ namespace Numeric {
 
         // transform to: x^3 + p*x + q = 0
         const T ov3{ static_cast<T>(1) / static_cast<T>(3) },
-		ov27{ static_cast<T>(1) / static_cast<T>(27) },
-		ovsqrt27{ static_cast<T>(1) / std::sqrt(static_cast<T>(27)) },
-		bSqr{ xi_b * xi_b },
-		p{ (static_cast<T>(3) * xi_c - bSqr) * ov3 },
-		q{ (static_cast<T>(9) * xi_b * xi_c - static_cast<T>(27) * xi_d - static_cast<T>(2) * bSqr * xi_b) * ov27 };
+                ov27{ static_cast<T>(1) / static_cast<T>(27) },
+                ovsqrt27{ static_cast<T>(1) / std::sqrt(static_cast<T>(27)) },
+                bSqr{ xi_b * xi_b },
+                p{ (static_cast<T>(3) * xi_c - bSqr) * ov3 },
+                q{ (static_cast<T>(9) * xi_b * xi_c - static_cast<T>(27) * xi_d - static_cast<T>(2) * bSqr * xi_b) * ov27 };
 
         // x = w - (p / (3 * w))
         // (w^3)^2 - q*(w^3) - (p^3)/27 = 0
@@ -249,13 +264,13 @@ namespace Numeric {
             h = std::sqrt(h);
 
             const T qHalf{ q * static_cast<T>(0.5) },
-		    bThird{ xi_b * ov3 },
-		    r{ qHalf + h },
-		    t{ qHalf - h },
-		    s{ std::cbrt(r) },
-		    u{ std::cbrt(t) },
-		    re{ -(s + u) * T(0.5) - bThird },
-		    im{  (s - u) * Constants<T>::SQRT3() * T(0.5) };
+                    bThird{ xi_b * ov3 },
+                    r{ qHalf + h },
+                    t{ qHalf - h },
+                    s{ std::cbrt(r) },
+                    u{ std::cbrt(t) },
+                    re{ -(s + u) * T(0.5) - bThird },
+                    im{  (s - u) * Constants<T>::SQRT3() * T(0.5) };
 
             // real root
             xo_roots[0] = (s + u) - bThird;
@@ -273,11 +288,11 @@ namespace Numeric {
         }  // three real solutions
         else {            
             const T i{ p * std::sqrt(-p) * ovsqrt27 },     // p is negative (since h is positive)
-		    j{ std::cbrt(i) },
-		    k{ ov3 * std::acos((q / (static_cast<T>(2) * i))) },
-		    m{ std::cos(k) },
-		    n{ std::sin(k) * Constants<T>::SQRT3() },
-		    s{ -xi_b * ov3 };
+                    j{ std::cbrt(i) },
+                    k{ ov3 * std::acos((q / (static_cast<T>(2) * i))) },
+                    m{ std::cos(k) },
+                    n{ std::sin(k) * Constants<T>::SQRT3() },
+                    s{ -xi_b * ov3 };
 
             // roots
             xo_roots[0] = static_cast<T>(2) * j * m + s;
