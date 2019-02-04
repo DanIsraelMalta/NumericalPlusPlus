@@ -48,7 +48,7 @@ namespace Numeric {
         FloatingPointTrait() = delete;
 
         // minimal difference between two values to be considered unequal.
-        constexpr static T epsilon() { return T(1); };
+        constexpr static T epsilon() { return T{}; };
 
         // '=='
         constexpr static bool Equals(const T xi_lhs, const T xi_rhs) {
@@ -74,12 +74,10 @@ namespace Numeric {
     // floating point equality test using absolute error and relative error boundary test
     constexpr bool FloatingPointTrait<float>::Equals(const float xi_lhs, const float xi_rhs) {
         // binary equal
-        if (xi_lhs == xi_rhs) {
-            return true;
-        }
+        if (xi_lhs == xi_rhs) return true;
 
         // locals
-	const float absLhs{ std::abs(xi_lhs) },
+        const float absLhs{ std::abs(xi_lhs) },
                     absRhs{ std::abs(xi_rhs) },
                     diff{ std::abs(xi_lhs - xi_rhs) };
 
@@ -95,14 +93,12 @@ namespace Numeric {
     // double equality test using absolute error and relative error boundary test
     constexpr bool FloatingPointTrait<double>::Equals(const double xi_lhs, const double xi_rhs) {
         // binary equal
-        if (xi_lhs == xi_rhs) {
-            return true;
-        }
+        if (xi_lhs == xi_rhs) return true;
 
         // locals
-	const double absLhs{ std::abs(xi_lhs) },
-			absRhs{ std::abs(xi_rhs) },
-			diff{ std::abs(xi_lhs - xi_rhs) };
+        const double absLhs{ std::abs(xi_lhs) },
+                     absRhs{ std::abs(xi_rhs) },
+                     diff{ std::abs(xi_lhs - xi_rhs) };
 
         // absolute error test (since one or both of inputs are zero)
         if ((xi_lhs == 0) || (xi_rhs == 0) || (diff < FloatingPointTrait<double>::epsilon())) {
@@ -116,14 +112,12 @@ namespace Numeric {
     // long double equality test using absolute error and relative error boundary test
     constexpr bool FloatingPointTrait<long double>::Equals(const long double xi_lhs, const long double xi_rhs) {
         // binary equal
-        if (xi_lhs == xi_rhs) {
-            return true;
-        }
+        if (xi_lhs == xi_rhs) return true;
 
         // locals
-	const long double absLhs{ std::abs(xi_lhs) },
-						  absRhs{ std::abs(xi_rhs) },
-						  diff{ std::abs(xi_lhs - xi_rhs) };
+        const long double absLhs{ std::abs(xi_lhs) },
+                          absRhs{ std::abs(xi_rhs) },
+                          diff{ std::abs(xi_lhs - xi_rhs) };
 
         // absolute error test (since one or both of inputs are zero)
         if ((xi_lhs == 0) || (xi_rhs == 0) || (diff < FloatingPointTrait<long double>::epsilon())) {
