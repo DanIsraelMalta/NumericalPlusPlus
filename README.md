@@ -1,3 +1,5 @@
+*** see repository GLSL-CPP for modern implementation of this library ***
+
 # NumericalPlusPlus
 
 A header only collection of usefull, accurate & efficient numercial objects.
